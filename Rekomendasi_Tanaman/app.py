@@ -22,9 +22,9 @@ st.markdown("""
 st.title("Rekomendasi Tanaman Berdasarkan Cuaca & Tanah")
 
 # Load model AI
-model = joblib.load("crop_recommendation_model.pkl")
-scaler = joblib.load("scaler.pkl")
-le = joblib.load("label_encoder.pkl")
+model = joblib.load("Rekomendasi_Tanaman/crop_recommendation_model.pkl")
+scaler = joblib.load("Rekomendasi_Tanaman/scaler.pkl")
+le = joblib.load("Rekomendasi_Tanaman/label_encoder.pkl")
 
 API_KEY = "d4179fb703532ad460882dd59234d867"
 
