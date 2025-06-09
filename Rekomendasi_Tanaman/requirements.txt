@@ -3,7 +3,7 @@ requests
 folium
 streamlit-folium
 geopy
-numpy==1.23.5
+numpy
 pandas
 scikit-learn
 tensorflow
