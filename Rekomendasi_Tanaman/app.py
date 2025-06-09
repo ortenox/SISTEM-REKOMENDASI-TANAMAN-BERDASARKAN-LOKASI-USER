@@ -3,6 +3,7 @@ import requests
 import folium
 from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
+from tensorflow.keras.models import load_model
 import numpy as np
 import pandas as pd
 import joblib
@@ -22,7 +23,7 @@ st.markdown("""
 st.title("Rekomendasi Tanaman Berdasarkan Cuaca & Tanah")
 
 # Load model AI
-model = joblib.load("Rekomendasi_Tanaman/crop_recommendation_model.pkl")
+model = joblib.load("Rekomendasi_Tanaman/crop_recommendation_model.h5")
 scaler = joblib.load("Rekomendasi_Tanaman/scaler.pkl")
 le = joblib.load("Rekomendasi_Tanaman/label_encoder.pkl")
 
