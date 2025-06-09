@@ -1,0 +1,10 @@
+streamlit
+requests
+folium
+streamlit-folium
+geopy
+numpy
+pandas
+scikit-learn
+tensorflow==2.13.0
+joblib
