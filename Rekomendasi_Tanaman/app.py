@@ -7,7 +7,18 @@ import numpy as np
 import pandas as pd
 import joblib
 
+# Konfigurasi halaman dan styling
 st.set_page_config(page_title="Dashboard Cuaca & Tanah", layout="centered")
+
+st.markdown("""
+    <style>
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("Rekomendasi Tanaman Berdasarkan Cuaca & Tanah")
 
 # Load model AI
@@ -17,7 +28,6 @@ le = joblib.load("label_encoder.pkl")
 
 API_KEY = "d4179fb703532ad460882dd59234d867"
 
-# Ambil koordinat dari nama kota
 def get_coords_from_city(city_name):
     geolocator = Nominatim(user_agent="soil_data_colab")
     location = geolocator.geocode(city_name)
@@ -25,7 +35,6 @@ def get_coords_from_city(city_name):
         return location.latitude, location.longitude
     return None, None
 
-# Fungsi ambil data cuaca dari OpenWeather
 def get_forecast_summary(lat, lon, api_key):
     url = f"http://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={api_key}&units=metric"
     response = requests.get(url)
@@ -44,7 +53,6 @@ def get_forecast_summary(lat, lon, api_key):
         "rainfall": round(sum(rainfalls) / len(rainfalls), 2)
     }
 
-# Fungsi ambil data tanah dari SoilGrids
 def get_soil_data(lat, lon):
     base_url = "https://rest.isric.org/soilgrids/v2.0/properties/query"
     def get_value(prop):
@@ -77,8 +85,7 @@ if city:
     if lat:
         st.success(f"Koordinat: ({lat:.2f}, {lon:.2f})")
 
-# Peta
-st.divider()
+# Peta interaktif
 st.subheader("Klik lokasi di peta (opsional)")
 m = folium.Map(location=[-2.5, 118], zoom_start=5)
 folium.LatLngPopup().add_to(m)
@@ -90,54 +97,47 @@ if map_data and map_data.get("last_clicked"):
     st.success(f"Koordinat dipilih: ({lat:.2f}, {lon:.2f})")
 
 if lat and lon:
-    st.subheader("Ringkasan Cuaca")
-    cuaca = get_forecast_summary(lat, lon, API_KEY)
-    if cuaca:
-        for k, v in cuaca.items():
-            st.write(f"**{k.replace('_', ' ').title()}:** {v}")
-    else:
-        st.error("Gagal mendapatkan data cuaca.")
+    with st.container():
+        st.subheader("Ringkasan Cuaca")
+        cuaca = get_forecast_summary(lat, lon, API_KEY)
+        if cuaca:
+            for k, v in cuaca.items():
+                st.write(f"**{k.replace('_', ' ').title()}:** {v}")
+        else:
+            st.error("Gagal mendapatkan data cuaca.")
 
-    st.subheader("Data Tanah")
-    tanah = get_soil_data(lat, lon)
+        st.subheader("Data Tanah")
+        tanah = get_soil_data(lat, lon)
 
-    # Nilai rata-rata default jika data tidak tersedia
-    default_N = 54.2
-    default_ph = 6.4
+        default_N = 54.2
+        default_ph = 6.4
 
-    # Ambil nilai dari tanah, bisa None
-    N_val = tanah.get("N")
-    ph_val = tanah.get("ph")
+        N_val = tanah.get("N")
+        ph_val = tanah.get("ph")
 
-    # Jika None, ganti dengan default dan tampilkan info, jika ada tampilkan nilai
-    if N_val is None:
-        st.info(f"N: {default_N}")
-        N_val = default_N
-    else:
-        st.success(f"N: {N_val}")
+        if N_val is None:
+            st.write(f"N: {default_N}")
+            N_val = default_N
+        else:
+            st.write(f"N: {N_val}")
 
-    if ph_val is None:
-        st.info(f"pH: {default_ph}")
-        ph_val = default_ph
-    else:
-        st.success(f"Ph: {ph_val}")
+        if ph_val is None:
+            st.write(f"pH: {default_ph}")
+            ph_val = default_ph
+        else:
+            st.write(f"pH: {ph_val}")
 
-    # --- AI Prediction ---
-    if cuaca is not None and all(val is not None for val in [cuaca.get("temperature"), cuaca.get("humidity"), cuaca.get("rainfall"), N_val, ph_val]):
-        st.subheader("Rekomendasi AI")
-        input_df = pd.DataFrame([[
-            N_val,
-            cuaca["temperature"],
-            cuaca["humidity"],
-            ph_val,
-            cuaca["rainfall"]
-        ]], columns=["N", "temperature", "humidity", "ph", "rainfall"])
-        input_scaled = scaler.transform(input_df)
-        pred = model.predict(input_scaled)
-        pred_crop = le.inverse_transform([np.argmax(pred)])
-        confidence = np.max(pred) * 100
+    with st.container():
+        if cuaca and all(val is not None for val in [cuaca.get("temperature"), cuaca.get("humidity"), cuaca.get("rainfall"), N_val, ph_val]):
+            st.subheader("Rekomendasi AI")
+            input_df = pd.DataFrame([[N_val, cuaca["temperature"], cuaca["humidity"], ph_val, cuaca["rainfall"]]],
+                                    columns=["N", "temperature", "humidity", "ph", "rainfall"])
+            input_scaled = scaler.transform(input_df)
+            pred = model.predict(input_scaled)
+            pred_crop = le.inverse_transform([np.argmax(pred)])
+            confidence = np.max(pred) * 100
 
-        st.success(f"Tanaman yang direkomendasikan: **{pred_crop[0]}**")
-        st.write(f"Keyakinan model: **{confidence:.2f}%**")
-    else:
-        st.warning("Data tidak lengkap untuk melakukan prediksi AI.")
+            st.success(f"Tanaman yang direkomendasikan: **{pred_crop[0]}**")
+            st.write(f"Keyakinan model: **{confidence:.2f}%**")
+        else:
+            st.warning("Data tidak lengkap untuk melakukan prediksi AI.")
