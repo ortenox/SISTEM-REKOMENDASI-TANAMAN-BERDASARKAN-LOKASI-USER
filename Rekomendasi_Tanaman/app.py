@@ -23,7 +23,7 @@ st.markdown("""
 st.title("Rekomendasi Tanaman Berdasarkan Cuaca & Tanah")
 
 # Load model AI
-model = load_model("crop_recommendation_model.h5")
+model = load_model("Rekomendasi_Tanaman/crop_recommendation_model.h5")
 scaler = joblib.load("Rekomendasi_Tanaman/scaler.pkl")
 le = joblib.load("Rekomendasi_Tanaman/label_encoder.pkl")
 
