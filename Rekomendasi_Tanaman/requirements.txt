@@ -6,5 +6,5 @@ geopy
 numpy==1.23.5
 pandas
 scikit-learn
-tensorflow==2.13.0
+tensorflow
 joblib
