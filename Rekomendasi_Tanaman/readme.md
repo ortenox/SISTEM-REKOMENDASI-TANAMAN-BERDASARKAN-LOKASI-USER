@@ -3,7 +3,9 @@
 jalankan di terminal
 
 python -m venv venv
+
 source venv/bin/activate   # macOS/Linux
+
 venv\Scripts\activate      # Windows
 
 pip install -r requirements.txt
@@ -17,7 +19,9 @@ Browser akan otomatis terbuka ke alamat localhost (contohnya http://localhost:85
 jalankan di terminal
 
 python -m venv venv
+
 source venv/bin/activate   # macOS/Linux
+
 venv\Scripts\activate      # Windows
 
 pip install -r requirements.txt
