@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import folium
 from streamlit_folium import st_folium
-from geopy.geocoders import Nominatim
+from opencage.geocoder import OpenCageGeocode
 from tensorflow.keras.models import load_model
 import numpy as np
 import pandas as pd
@@ -28,12 +28,16 @@ scaler = joblib.load("Rekomendasi_Tanaman/scaler.pkl")
 le = joblib.load("Rekomendasi_Tanaman/label_encoder.pkl")
 
 API_KEY = "d4179fb703532ad460882dd59234d867"
+OPENCAGE_KEY = "bb5f4c87ead0454dac0231fd0b10dd19"
 
 def get_coords_from_city(city_name):
-    geolocator = Nominatim(user_agent="soil_data_colab")
-    location = geolocator.geocode(city_name)
-    if location:
-        return location.latitude, location.longitude
+    try:
+        geocoder = OpenCageGeocode(OPENCAGE_KEY)
+        results = geocoder.geocode(city_name)
+        if results and len(results):
+            return results[0]['geometry']['lat'], results[0]['geometry']['lng']
+    except Exception as e:
+        st.error(f"Geocoding error: {e}")
     return None, None
 
 def get_forecast_summary(lat, lon, api_key):
@@ -83,8 +87,10 @@ city = st.text_input("Masukkan nama kota (Contoh: Bandung)")
 lat, lon = None, None
 if city:
     lat, lon = get_coords_from_city(city)
-    if lat:
+    if lat and lon:
         st.success(f"Koordinat: ({lat:.2f}, {lon:.2f})")
+    else:
+        st.warning("Gagal mendapatkan koordinat dari nama kota.")
 
 # Peta interaktif
 st.subheader("Klik lokasi di peta (opsional)")
