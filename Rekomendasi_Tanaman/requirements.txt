@@ -2,7 +2,7 @@ streamlit
 requests
 folium
 streamlit-folium
-geopy
+opencage
 numpy
 pandas
 scikit-learn
